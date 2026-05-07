@@ -102,6 +102,15 @@ namespace PlayerControl
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Jump"",
+                    ""type"": ""Button"",
+                    ""id"": ""30ed9062-f6a4-47f0-be0f-06cf0d792589"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -168,6 +177,17 @@ namespace PlayerControl
                     ""processors"": """",
                     ""groups"": "";Controller"",
                     ""action"": ""Movement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""668a5129-3359-4ded-951b-09d471c02771"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Jump"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -250,6 +270,7 @@ namespace PlayerControl
             // OverWorld
             m_OverWorld = asset.FindActionMap("OverWorld", throwIfNotFound: true);
             m_OverWorld_Movement = m_OverWorld.FindAction("Movement", throwIfNotFound: true);
+            m_OverWorld_Jump = m_OverWorld.FindAction("Jump", throwIfNotFound: true);
             // TurnBased
             m_TurnBased = asset.FindActionMap("TurnBased", throwIfNotFound: true);
             m_TurnBased_Movement = m_TurnBased.FindAction("Movement", throwIfNotFound: true);
@@ -336,6 +357,7 @@ namespace PlayerControl
         private readonly InputActionMap m_OverWorld;
         private List<IOverWorldActions> m_OverWorldActionsCallbackInterfaces = new List<IOverWorldActions>();
         private readonly InputAction m_OverWorld_Movement;
+        private readonly InputAction m_OverWorld_Jump;
         /// <summary>
         /// Provides access to input actions defined in input action map "OverWorld".
         /// </summary>
@@ -351,6 +373,10 @@ namespace PlayerControl
             /// Provides access to the underlying input action "OverWorld/Movement".
             /// </summary>
             public InputAction @Movement => m_Wrapper.m_OverWorld_Movement;
+            /// <summary>
+            /// Provides access to the underlying input action "OverWorld/Jump".
+            /// </summary>
+            public InputAction @Jump => m_Wrapper.m_OverWorld_Jump;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -380,6 +406,9 @@ namespace PlayerControl
                 @Movement.started += instance.OnMovement;
                 @Movement.performed += instance.OnMovement;
                 @Movement.canceled += instance.OnMovement;
+                @Jump.started += instance.OnJump;
+                @Jump.performed += instance.OnJump;
+                @Jump.canceled += instance.OnJump;
             }
 
             /// <summary>
@@ -394,6 +423,9 @@ namespace PlayerControl
                 @Movement.started -= instance.OnMovement;
                 @Movement.performed -= instance.OnMovement;
                 @Movement.canceled -= instance.OnMovement;
+                @Jump.started -= instance.OnJump;
+                @Jump.performed -= instance.OnJump;
+                @Jump.canceled -= instance.OnJump;
             }
 
             /// <summary>
@@ -574,6 +606,13 @@ namespace PlayerControl
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnMovement(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "Jump" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnJump(InputAction.CallbackContext context);
         }
         /// <summary>
         /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "TurnBased" which allows adding and removing callbacks.
