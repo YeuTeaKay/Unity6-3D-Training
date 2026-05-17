@@ -1,4 +1,5 @@
 using System;
+using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,13 +7,17 @@ namespace PlayerControl
 {
     public class PlayerMovement : MonoBehaviour, PlayerController.IOverWorldActions
     {
-        private PlayerController playerInput;
-
-        private Rigidbody characterRigidbody;
-        private Vector2 moveInput;
         
-        private bool jumpInput = false;
+        private PlayerController playerInput;
+        private Rigidbody characterRigidbody;
+
+        private Vector2 moveInput;
         private Vector3 characterMove;
+        //Checks
+        [SerializeField] private LayerMask groundMask;
+        private bool isGrounded = false;
+        private float groundCheckDistance = 0.7f;
+
 
         private void Awake() 
         {
@@ -38,16 +43,22 @@ namespace PlayerControl
             Debug.Log("Move Input: " + moveInput);
         }
 
+
         void PlayerController.IOverWorldActions.OnJump(InputAction.CallbackContext context)
         {
-            jumpInput = context.ReadValue<float>() > 0; //Idk if the float is one that needs to be check or might be sonething else.
-            Debug.Log("Jump Input: " + jumpInput);
+            
+            if (isGrounded && context.started)
+            {
+                characterRigidbody.AddForce(Vector3.up * 5, ForceMode.Impulse);
+            }
+            Debug.Log("Jump Input: " + context.started);
         }
+
 
         private void FixedUpdate() 
         {
             OnMove();
-            OnJump();
+            OnCheckGround();
             
         }
 
@@ -57,11 +68,17 @@ namespace PlayerControl
             characterRigidbody.MovePosition(characterRigidbody.position + characterMove * 5 * Time.fixedDeltaTime);
         }
 
-        private void OnJump()
+        private void OnCheckGround()
         {
-            //TODO: Implement jump logic, including checking if the character is grounded and applying a vertical force to the Rigidbody when jumpInput is true.
+            isGrounded = Physics.SphereCast(transform.position, 0.5f, Vector3.down, out RaycastHit hit, groundCheckDistance, groundMask);
+            Debug.Log("Is Grounded: " + isGrounded);
         }
 
-        
+        private void OnDrawGizmos()
+        {
+            Gizmos.color = isGrounded ? Color.green : Color.red;
+            Gizmos.DrawWireSphere(transform.position + Vector3.down * groundCheckDistance, 0.5f);
+        }
+
     }
 }
