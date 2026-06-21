@@ -111,6 +111,15 @@ namespace PlayerControl
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Camera"",
+                    ""type"": ""Value"",
+                    ""id"": ""e8ce9ea3-6eb3-4fd0-a4ae-073b294435f9"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -188,6 +197,17 @@ namespace PlayerControl
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Jump"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ed6f4e07-374a-44f9-b803-12d3d712d753"",
+                    ""path"": ""<Mouse>/delta"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Camera"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -271,6 +291,7 @@ namespace PlayerControl
             m_OverWorld = asset.FindActionMap("OverWorld", throwIfNotFound: true);
             m_OverWorld_Movement = m_OverWorld.FindAction("Movement", throwIfNotFound: true);
             m_OverWorld_Jump = m_OverWorld.FindAction("Jump", throwIfNotFound: true);
+            m_OverWorld_Camera = m_OverWorld.FindAction("Camera", throwIfNotFound: true);
             // TurnBased
             m_TurnBased = asset.FindActionMap("TurnBased", throwIfNotFound: true);
             m_TurnBased_Movement = m_TurnBased.FindAction("Movement", throwIfNotFound: true);
@@ -358,6 +379,7 @@ namespace PlayerControl
         private List<IOverWorldActions> m_OverWorldActionsCallbackInterfaces = new List<IOverWorldActions>();
         private readonly InputAction m_OverWorld_Movement;
         private readonly InputAction m_OverWorld_Jump;
+        private readonly InputAction m_OverWorld_Camera;
         /// <summary>
         /// Provides access to input actions defined in input action map "OverWorld".
         /// </summary>
@@ -377,6 +399,10 @@ namespace PlayerControl
             /// Provides access to the underlying input action "OverWorld/Jump".
             /// </summary>
             public InputAction @Jump => m_Wrapper.m_OverWorld_Jump;
+            /// <summary>
+            /// Provides access to the underlying input action "OverWorld/Camera".
+            /// </summary>
+            public InputAction @Camera => m_Wrapper.m_OverWorld_Camera;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -409,6 +435,9 @@ namespace PlayerControl
                 @Jump.started += instance.OnJump;
                 @Jump.performed += instance.OnJump;
                 @Jump.canceled += instance.OnJump;
+                @Camera.started += instance.OnCamera;
+                @Camera.performed += instance.OnCamera;
+                @Camera.canceled += instance.OnCamera;
             }
 
             /// <summary>
@@ -426,6 +455,9 @@ namespace PlayerControl
                 @Jump.started -= instance.OnJump;
                 @Jump.performed -= instance.OnJump;
                 @Jump.canceled -= instance.OnJump;
+                @Camera.started -= instance.OnCamera;
+                @Camera.performed -= instance.OnCamera;
+                @Camera.canceled -= instance.OnCamera;
             }
 
             /// <summary>
@@ -613,6 +645,13 @@ namespace PlayerControl
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnJump(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "Camera" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnCamera(InputAction.CallbackContext context);
         }
         /// <summary>
         /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "TurnBased" which allows adding and removing callbacks.
