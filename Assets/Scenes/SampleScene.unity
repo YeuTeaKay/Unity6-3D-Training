@@ -994,7 +994,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &956796255
 Transform:
@@ -1666,6 +1666,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerControl.PlayerMovement
   moveSpeed: 5
   maxSpeed: 10
+  rotationSpeed: 270
   acceleration: 3
   deceleration: 10
   groundMask:
@@ -1673,9 +1674,9 @@ MonoBehaviour:
     m_Bits: 8
   groundCheckDistance: 0.7
   lookSensitivity: 1
-  CheckGrounded: 1
-  CheckJumping: 0
-  CheckWall: 0
+  checkGrounded: 1
+  checkJumping: 1
+  checkWall: 1
 --- !u!1 &2047916761
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,10 +1,8 @@
-using System;
-using System.Collections;
-using NUnit.Framework;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Interactions;
+using UnityEngine.Serialization;
 
 namespace PlayerControl
 {
@@ -19,16 +17,17 @@ namespace PlayerControl
         /// </summary>
     
 
-        private PlayerController playerInput;
-        private Rigidbody characterRigidbody;
-        private Vector2 moveInput;
-        private Vector2 lookInput;
-        private Vector3 characterMove;
+        private PlayerController _playerInput;
+        private Rigidbody _characterRigidbody;
+        private Vector2 _moveInput;
+        //private Vector2 lookInput;
+        private Vector3 _characterMove;
         
         [Header("Movement")]
 
-        [SerializeField] private float moveSpeed = 0f;
+        [SerializeField] private float moveSpeed = 1f;
         [SerializeField] private float maxSpeed = 5f;
+        [SerializeField] private float rotationSpeed = 180f; // degrees per second
         [SerializeField] private float acceleration = 8f;
         [SerializeField] private float deceleration = 10f;
 
@@ -38,44 +37,39 @@ namespace PlayerControl
         
         [Header("Look")]
         [SerializeField] private float lookSensitivity = 1f;
-        private CinemachineOrbitalFollow cameraFollow;
+        //private CinemachineOrbitalFollow cameraFollow;
 
         [Header("Debug")]
-        private bool isGrounded = false;
-        private bool isJumping = false;
-        [SerializeField] private bool CheckGrounded = true;
-        [SerializeField] private bool CheckJumping = true;
-        [SerializeField] private bool CheckWall = true;
+        private bool _isGrounded;
+        [SerializeField] private bool checkGrounded = true;
+        [SerializeField] private bool checkJumping = true;
+        [SerializeField] private bool checkWall = true;
 
 
 
         private void Awake() 
         {
-            characterRigidbody = this.GetComponentInChildren<Rigidbody>();
-            cameraFollow = FindAnyObjectByType<CinemachineOrbitalFollow>();
+            _characterRigidbody = this.GetComponentInChildren<Rigidbody>();
+            _characterRigidbody.constraints = RigidbodyConstraints.FreezeRotation;
+            //cameraFollow = FindAnyObjectByType<CinemachineOrbitalFollow>();
 
-            playerInput = new PlayerController();
-            playerInput.OverWorld.SetCallbacks(this);
-        }
-
-        private void Start()
-        {
-            
+            _playerInput = new PlayerController();
+            _playerInput.OverWorld.SetCallbacks(this);
         }
 
         private void OnDestroy()
         {
-            playerInput.OverWorld.RemoveCallbacks(this);
-            playerInput.Dispose();
+            _playerInput.OverWorld.RemoveCallbacks(this);
+            _playerInput.Dispose();
         }
     
-        private void OnEnable() => playerInput.Enable();
-        private void OnDisable() => playerInput.Disable();
+        private void OnEnable() => _playerInput.Enable();
+        private void OnDisable() => _playerInput.Disable();
 
         void PlayerController.IOverWorldActions.OnMovement(InputAction.CallbackContext context)
         {
-            moveInput = context.ReadValue<Vector2>();
-            //Debug.Log("Move Input: " + moveInput);
+            _moveInput = context.ReadValue<Vector2>();
+            Debug.Log("Move Input: " + _moveInput);
         }
 
 
@@ -93,14 +87,10 @@ namespace PlayerControl
 
         void PlayerController.IOverWorldActions.OnCamera(InputAction.CallbackContext context)
         {
-            lookInput = context.ReadValue<Vector2>();
+            //lookInput = context.ReadValue<Vector2>();
             //Debug.Log("Look Input: " + lookInput);
         }
-
-        private void LateUpdate() 
-        {
-            PlayerLook();
-        }
+        
 
         private void FixedUpdate() 
         {
@@ -112,52 +102,46 @@ namespace PlayerControl
         private void OnMove() 
         {
             
-            Vector3 inputDirection = new Vector3(moveInput.x, 0, moveInput.y);
-
+            Vector3 inputDirection = new Vector3(_moveInput.x, 0, _moveInput.y);
+    
             float targetSpeed = inputDirection != Vector3.zero ? maxSpeed : 0f;
             float rate = inputDirection != Vector3.zero ? acceleration : deceleration;
 
             moveSpeed = Mathf.MoveTowards(moveSpeed, targetSpeed, rate * Time.fixedDeltaTime);
 
-            characterRigidbody.MovePosition(characterRigidbody.position + inputDirection * (moveSpeed * Time.fixedDeltaTime));
-         
-        }
+            _characterRigidbody.MovePosition(_characterRigidbody.position + inputDirection * (moveSpeed * Time.fixedDeltaTime));
 
-        private void PlayerLook()
-        {
-        }
-
-        private void ClampAngle(float angle, float min, float max)
-        {
+            if (inputDirection != Vector3.zero)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(inputDirection,  Vector3.up);
+                Quaternion newRotation = Quaternion.RotateTowards(_characterRigidbody.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
+                _characterRigidbody.MoveRotation(newRotation);
+            }
             
-        }
-        
-
-        private IEnumerator JumpCooldown()
-        {
-            yield return new WaitForSeconds(0.3f);
-
+         
         }
 
         private void OnCheckGround()
         {
-            isGrounded = Physics.SphereCast(characterRigidbody.position, 0.5f, Vector3.down, out RaycastHit hit, groundCheckDistance, groundMask);
+            _isGrounded = Physics.SphereCast(_characterRigidbody.position, 0.5f, Vector3.down, out RaycastHit hit, groundCheckDistance, groundMask);
             //Debug.Log("Is Grounded: " + isGrounded);
 
         }
 
         private void OnDrawGizmos()
         {
-            if (CheckGrounded)
+            if (_characterRigidbody == null) return;
+            
+            if (checkGrounded)
             {
-                Gizmos.color = isGrounded ? Color.green : Color.red;    
-                Gizmos.DrawWireSphere(characterRigidbody.position + Vector3.down * groundCheckDistance, 0.5f);   
+                Gizmos.color = _isGrounded ? Color.green : Color.red;    
+                Gizmos.DrawWireSphere(_characterRigidbody.position + Vector3.down * groundCheckDistance, 0.5f);   
             }
             
-            if (CheckWall)
+            if (checkWall)
             {
                 Gizmos.color = Color.blue;
-                Gizmos.DrawWireSphere(characterRigidbody.position + Vector3.forward * 1f, 1f);
+                Gizmos.DrawWireSphere(_characterRigidbody.position + Vector3.forward * 1f, 1f);
             }
             
         }
